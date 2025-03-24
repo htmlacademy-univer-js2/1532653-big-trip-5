@@ -2,13 +2,13 @@ import {getRandomPoint} from '../mock/point.js';
 import {mockDestinations} from '../mock/destinations.js';
 import {mockOffers} from '../mock/offers.js';
 
-const TASK_COUNT = 4;
+const TASK_COUNT = 9;
 
 export default class PointsModel {
-  points = Array.from({length: TASK_COUNT}, getRandomPoint);
+  #points = Array.from({length: TASK_COUNT}, getRandomPoint);
 
-  getPoints() {
-    return this.points;
+  get points() {
+    return this.#points;
   }
 
   getDestination(point) {
