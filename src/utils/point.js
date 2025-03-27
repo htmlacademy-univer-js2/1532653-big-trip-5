@@ -7,14 +7,6 @@ const DAY_FORMAT = 'MMM D';
 const TIME_FORMAT = 'HH:mm';
 const DATE_FORMAT = 'DD/MM/YY HH:mm';
 
-function getRandomArrayElement(items) {
-  return items[Math.floor(Math.random() * items.length)];
-}
-
-function capitalizeFirstLetter(word) {
-  return word.charAt(0).toUpperCase() + word.slice(1);
-}
-
 function humanizeDay(date) {
   return dayjs(date).format(DAY_FORMAT);
 }
@@ -43,4 +35,4 @@ function getTimeDuration(startTime, endTime) {
   return diff.format('mm[M]');
 }
 
-export {getRandomArrayElement, capitalizeFirstLetter, humanizeDay, humanizeTime, humanizeDate, getTimeDuration};
+export {humanizeDay, humanizeTime, humanizeDate, getTimeDuration};
