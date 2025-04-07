@@ -35,4 +35,12 @@ function getTimeDuration(startTime, endTime) {
   return diff.format('mm[M]');
 }
 
-export {humanizeDay, humanizeTime, humanizeDate, getTimeDuration};
+function isPointFuture(date) {
+  return dayjs(date) > dayjs();
+}
+
+function isPointPast(date) {
+  return dayjs(date) < dayjs();
+}
+
+export {humanizeDay, humanizeTime, humanizeDate, getTimeDuration, isPointFuture, isPointPast};
