@@ -1,9 +1,8 @@
-import {render, RenderPosition, replace} from '../framework/render.js';
+import {render, RenderPosition} from '../framework/render.js';
 import SortView from '../view/sort-view.js';
-import PointView from '../view/point-view.js';
-import PointEditView from '../view/point-edit-view.js';
 import PointListView from '../view/point-list-view.js';
 import NoPointView from '../view/no-point-view.js';
+import PointPresenter from './point-presenter.js';
 
 export default class TripEventsPresenter {
   #tripEventsContainer = null;
@@ -31,41 +30,11 @@ export default class TripEventsPresenter {
   }
 
   #renderPoint(point, destination, offers) {
-    const escKeyDownHandler = (evt) => {
-      if (evt.key === 'Escape') {
-        evt.preventDefault();
-        replaceFormToPoint();
-        document.removeEventListener('keydown', escKeyDownHandler);
-      }
-    };
-    const eventComponent = new PointView({
-      point,
-      destination,
-      offers,
-      onEditClick: () => {
-        replacePointToForm();
-        document.addEventListener('keydown', escKeyDownHandler);
-      }
-    });
-    const eventEditComponent = new PointEditView({
-      point,
-      destination,
-      offers,
-      onFormSubmit: () => {
-        replaceFormToPoint();
-        document.removeEventListener('keydown', escKeyDownHandler);
-      }
+    const pointPresenter = new PointPresenter({
+      pointListContainer: this.#pointListComponent.element,
     });
 
-    function replacePointToForm() {
-      replace(eventEditComponent, eventComponent);
-    }
-
-    function replaceFormToPoint() {
-      replace(eventComponent, eventEditComponent);
-    }
-
-    render(eventComponent, this.#pointListComponent.element);
+    pointPresenter.init(point, destination, offers);
   }
 
   #renderPoints() {
