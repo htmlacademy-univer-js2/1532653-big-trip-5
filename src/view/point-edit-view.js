@@ -23,7 +23,7 @@ function createPointEditTypesTemplate(type) {
           class="event__type-input  visually-hidden"
           type="radio"
           name="event-type"
-          value="${item}" ${type === item ? 'checked' : ''}
+          value="${item}" ${item === type ? 'checked' : ''}
         >
         <label class="event__type-label  event__type-label--${item}"
           for="event-type-${item}-1"
@@ -177,6 +177,6 @@ export default class PointEditView extends AbstractView {
 
   #formSubmitHandler = (evt) => {
     evt.preventDefault();
-    this.#handleFormSubmit();
+    this.#handleFormSubmit(this.#point);
   };
 }
