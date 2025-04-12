@@ -7,4 +7,10 @@ const FilterType = {
   PAST: 'past',
 };
 
-export {TYPES, FilterType};
+const SortType = {
+  DEFAULT: 'default',
+  TIME: 'time',
+  PRICE: 'price',
+};
+
+export {TYPES, FilterType, SortType};

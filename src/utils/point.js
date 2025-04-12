@@ -43,4 +43,15 @@ function isPointPast(date) {
   return dayjs(date) < dayjs();
 }
 
-export {humanizeDay, humanizeTime, humanizeDate, getTimeDuration, isPointFuture, isPointPast};
+function sortPointTime(pointA, pointB) {
+  const durationA = dayjs.duration(dayjs(pointA.dateTo).diff(pointA.dateFrom));
+  const durationB = dayjs.duration(dayjs(pointB.dateTo).diff(pointB.dateFrom));
+
+  return durationB - durationA;
+}
+
+function sortPointPrice(pointA, pointB) {
+  return pointB.price - pointA.price;
+}
+
+export {humanizeDay, humanizeTime, humanizeDate, getTimeDuration, isPointFuture, isPointPast, sortPointTime, sortPointPrice};
