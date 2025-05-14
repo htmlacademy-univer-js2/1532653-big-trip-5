@@ -35,6 +35,21 @@ function getTimeDuration(startTime, endTime) {
   return diff.format('mm[M]');
 }
 
+function getPointDestination(point, destinations) {
+  return destinations.find((destination) => destination.id === point.destination);
+}
+
+function getPointOffers(point, offers) {
+  const offersType = offers.find((type) => type.type === point.type);
+  const offersList = offersType.offers;
+
+  return point.offers.map((id) => offersList.find((offer) => offer.id === id));
+}
+
+function getOffersType(offers, type) {
+  return offers.find((item) => item.type === type).offers;
+}
+
 function isPointFuture(date) {
   return dayjs(date) > dayjs();
 }
@@ -54,4 +69,4 @@ function sortPointPrice(pointA, pointB) {
   return pointB.price - pointA.price;
 }
 
-export {humanizeDay, humanizeTime, humanizeDate, getTimeDuration, isPointFuture, isPointPast, sortPointTime, sortPointPrice};
+export {humanizeDay, humanizeTime, humanizeDate, getTimeDuration, getPointDestination, getPointOffers, getOffersType, isPointFuture, isPointPast, sortPointTime, sortPointPrice};
