@@ -1,5 +1,5 @@
 import AbstractView from '../framework/view/abstract-view.js';
-import {humanizeDay, humanizeTime, getTimeDuration} from '../utils/point.js';
+import {humanizeDay, humanizeTime, getTimeDuration, getPointDestination, getPointOffers} from '../utils/point.js';
 
 function createPointOffersTemplate(offers) {
   return (
@@ -14,9 +14,11 @@ function createPointOffersTemplate(offers) {
   );
 }
 
-function createPointTemplate({point, destination, offers}) {
+function createPointTemplate({point, destinations, offers}) {
   const {price, dateFrom, dateTo, isFavorite, type} = point;
-  const {name: city} = destination;
+  const pointDestination = getPointDestination(point, destinations);
+  const pointOffers = getPointOffers(point, offers);
+  const {name: city} = pointDestination;
 
   const date = humanizeDay(dateFrom).toUpperCase();
   const eventDuration = getTimeDuration(dateFrom, dateTo);
@@ -25,7 +27,7 @@ function createPointTemplate({point, destination, offers}) {
     ? 'event__favorite-btn--active'
     : '';
 
-  const offersTemplate = createPointOffersTemplate(offers);
+  const offersTemplate = createPointOffersTemplate(pointOffers);
 
   return (
     `<li class="trip-events__item">
@@ -63,15 +65,15 @@ function createPointTemplate({point, destination, offers}) {
 
 export default class PointView extends AbstractView {
   #point = null;
-  #destination = null;
+  #destinations = null;
   #offers = null;
   #handleEditClick = null;
   #handleFavoriteClick = null;
 
-  constructor({point, destination, offers, onEditClick, onFavoriteClick}) {
+  constructor({point, destinations, offers, onEditClick, onFavoriteClick}) {
     super();
     this.#point = point;
-    this.#destination = destination;
+    this.#destinations = destinations;
     this.#offers = offers;
     this.#handleEditClick = onEditClick;
     this.#handleFavoriteClick = onFavoriteClick;
@@ -83,7 +85,7 @@ export default class PointView extends AbstractView {
   }
 
   get template() {
-    return createPointTemplate({point: this.#point, destination: this.#destination, offers: this.#offers});
+    return createPointTemplate({point: this.#point, destinations: this.#destinations, offers: this.#offers});
   }
 
   #editClickHandler = (evt) => {

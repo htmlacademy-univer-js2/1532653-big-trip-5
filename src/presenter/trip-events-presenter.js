@@ -10,30 +10,35 @@ import {SortType} from '../const.js';
 export default class TripEventsPresenter {
   #tripEventsContainer = null;
   #pointsModel = null;
+  #destinationsModel = null;
+  #offersModel = null;
 
   #pointListComponent = new PointListView();
   #sortComponent = null;
   #noPointComponent = new NoPointView();
 
   #tripEventsPoints = [];
+  #tripEventsDestinations = null;
+  #tripEventsOffers = null;
   #pointPresenters = new Map();
   #currentSortType = SortType.DEFAULT;
   #sourcedTripEventsPoints = [];
 
-  constructor({tripEventsContainer, pointsModel}) {
+  constructor({tripEventsContainer, pointsModel, destinationsModel, offersModel}) {
     this.#tripEventsContainer = tripEventsContainer;
     this.#pointsModel = pointsModel;
+    this.#destinationsModel = destinationsModel;
+    this.#offersModel = offersModel;
   }
 
   init() {
     this.#tripEventsPoints = [...this.#pointsModel.points];
     this.#sourcedTripEventsPoints = [...this.#pointsModel.points];
+    this.#tripEventsDestinations = this.#destinationsModel.destinations;
+    this.#tripEventsOffers = this.#offersModel.offers;
 
     this.#renderTripEvents();
   }
-
-  #tripEventsDestination = (point) => this.#pointsModel.getDestination(point);
-  #tripEventsOffers = (point) => this.#pointsModel.getOffers(point);
 
   #handleModeChange = () => {
     this.#pointPresenters.forEach((presenter) => presenter.resetView());
@@ -44,8 +49,8 @@ export default class TripEventsPresenter {
     this.#sourcedTripEventsPoints = updateItem(this.#sourcedTripEventsPoints, updatedPoint);
     this.#pointPresenters.get(updatedPoint.id).init({
       point: updatedPoint,
-      destination: this.#tripEventsDestination(updatedPoint),
-      offers: this.#tripEventsOffers(updatedPoint)
+      destinations: this.#tripEventsDestinations,
+      offers: this.#tripEventsOffers,
     });
   };
 
@@ -91,8 +96,8 @@ export default class TripEventsPresenter {
 
     pointPresenter.init({
       point,
-      destination: this.#tripEventsDestination(point),
-      offers: this.#tripEventsOffers(point)
+      destinations: this.#tripEventsDestinations,
+      offers: this.#tripEventsOffers,
     });
     this.#pointPresenters.set(point.id, pointPresenter);
   }
