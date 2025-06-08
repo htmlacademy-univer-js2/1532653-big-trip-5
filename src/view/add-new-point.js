@@ -5,7 +5,17 @@ import {humanizeDate, getPointDestination, getPointOffers, getOffersType} from '
 import flatpickr from 'flatpickr';
 import 'flatpickr/dist/flatpickr.min.css';
 
-function createPointEditTypesTemplate(type) {
+const BLANK_POINT = {
+  price: 0,
+  dateFrom: null,
+  dateTo: null,
+  destination: '',
+  isFavorite: false,
+  offers: [],
+  type: 'flight'
+};
+
+function createAddNewPointTypesTemplate(type) {
   return (
     `<fieldset class="event__type-group">
       <legend class="visually-hidden">Event type</legend>
@@ -27,13 +37,13 @@ function createPointEditTypesTemplate(type) {
   );
 }
 
-function createPointEditDestinationsTemplate(pointDestination, destinations) {
+function createAddNewPointDestinationsTemplate(pointDestination, destinations) {
   return (
     `<input class="event__input  event__input--destination"
       id="event-destination-1"
       type="text"
       name="event-destination"
-      value="${pointDestination.name}"
+      value="${pointDestination ? pointDestination.name : ''}"
       list="destination-list-1">
     <datalist id="destination-list-1">
       ${destinations.map((item) => `<option value="${item.name}"></option>`).join('')}
@@ -41,7 +51,7 @@ function createPointEditDestinationsTemplate(pointDestination, destinations) {
   );
 }
 
-function createPointEditOffersTemplate(offersType, pointOffers) {
+function createAddNewPointOffersTemplate(offersType, pointOffers) {
   return (
     offersType.length ? `<section class="event__section  event__section--offers">
       <h3 class="event__section-title  event__section-title--offers">Offers</h3>
@@ -65,7 +75,7 @@ function createPointEditOffersTemplate(offersType, pointOffers) {
   );
 }
 
-function createPointEditDescriptionTemplate(pointDestination) {
+function createAddNewPointDescriptionTemplate(pointDestination) {
   return (
     pointDestination.description ? `<section class="event__section  event__section--destination">
       <h3 class="event__section-title  event__section-title--destination">Destination</h3>
@@ -80,18 +90,18 @@ function createPointEditDescriptionTemplate(pointDestination) {
   );
 }
 
-function createPointEditTemplate({point, destinations, offers}) {
+function createAddNewPointTemplate({point, destinations, offers}) {
   const {price, dateFrom, dateTo, type} = point;
 
   const dataFromValue = humanizeDate(dateFrom);
   const dataToValue = humanizeDate(dateTo);
-  const pointDestination = getPointDestination(point, destinations);
+  const pointDestination = point.destination ? getPointDestination(point, destinations) : '';
   const pointOffers = getPointOffers(point, offers);
-  const typesListTemplate = createPointEditTypesTemplate(type);
-  const destinationsListTemplate = createPointEditDestinationsTemplate(pointDestination, destinations);
+  const typesListTemplate = createAddNewPointTypesTemplate(type);
+  const destinationsListTemplate = createAddNewPointDestinationsTemplate(pointDestination, destinations);
   const offersType = getOffersType(offers, type);
-  const offersTemplate = createPointEditOffersTemplate(offersType, pointOffers);
-  const descriptionTemplate = createPointEditDescriptionTemplate(pointDestination);
+  const offersTemplate = createAddNewPointOffersTemplate(offersType, pointOffers);
+  const descriptionTemplate = createAddNewPointDescriptionTemplate(pointDestination);
 
   return (
     `<li class="trip-events__item">
@@ -133,10 +143,7 @@ function createPointEditTemplate({point, destinations, offers}) {
           </div>
 
           <button class="event__save-btn  btn  btn--blue" type="submit">Save</button>
-          <button class="event__reset-btn" type="reset">Delete</button>
-          <button class="event__rollup-btn" type="button">
-            <span class="visually-hidden">Open event</span>
-          </button>
+          <button class="event__reset-btn" type="reset">Cancel</button>
         </header>
         <section class="event__details">
           ${offersTemplate}
@@ -148,18 +155,16 @@ function createPointEditTemplate({point, destinations, offers}) {
   );
 }
 
-export default class PointEditView extends AbstractStatefulView {
-  #point = null;
+export default class AddNewPointView extends AbstractStatefulView {
   #destinations = null;
   #offers = null;
   #handleFormSubmit = null;
   #handleDeleteClick = null;
   #datepicker = null;
 
-  constructor({point, destinations, offers, onFormSubmit, onDeleteClick}) {
+  constructor({point = BLANK_POINT, destinations, offers, onFormSubmit, onDeleteClick}) {
     super();
     this._setState(point);
-    this.#point = point;
     this.#destinations = destinations;
     this.#offers = offers;
     this.#handleFormSubmit = onFormSubmit;
@@ -169,7 +174,7 @@ export default class PointEditView extends AbstractStatefulView {
   }
 
   get template() {
-    return createPointEditTemplate({point: this._state, destinations: this.#destinations, offers: this.#offers});
+    return createAddNewPointTemplate({point: this._state, destinations: this.#destinations, offers: this.#offers});
   }
 
   removeElement() {
@@ -190,14 +195,10 @@ export default class PointEditView extends AbstractStatefulView {
       .addEventListener('submit', this.#formSubmitHandler);
     this.element.querySelector('.event__reset-btn')
       .addEventListener('click', this.#formDeleteClickHandler);
-    this.element.querySelector('.event__rollup-btn')
-      .addEventListener('click', this.#rollupClickHandler);
     this.element.querySelector('.event__type-group')
       .addEventListener('change', this.#typeRadioHandler);
     this.element.querySelector('.event__input--destination')
       .addEventListener('change', this.#destinationOptionHandler);
-    this.element.querySelector('.event__input--price')
-      .addEventListener('input', this.#priceInputHandler);
     if (getOffersType(this.#offers, this._state.type).length) {
       this.element.querySelector('.event__available-offers')
         .addEventListener('change', this.#offersChangeHandler);
@@ -210,11 +211,6 @@ export default class PointEditView extends AbstractStatefulView {
   #formSubmitHandler = (evt) => {
     evt.preventDefault();
     this.#handleFormSubmit(this._state);
-  };
-
-  #rollupClickHandler = (evt) => {
-    evt.preventDefault();
-    this.#handleFormSubmit(this.#point);
   };
 
   #typeRadioHandler = (evt) => {
@@ -302,14 +298,6 @@ export default class PointEditView extends AbstractStatefulView {
       },
     );
   }
-
-  #priceInputHandler = (evt) => {
-    evt.preventDefault();
-
-    this._setState({
-      price: evt.target.value,
-    });
-  };
 
   #formDeleteClickHandler = (evt) => {
     evt.preventDefault();
