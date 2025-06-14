@@ -6,13 +6,24 @@ import PointsModel from './model/points-model.js';
 import DestinationsModel from './model/destinations-model.js';
 import OffersModel from './model/offers-model.js';
 import FilterModel from './model/filter-model.js';
+import DataApiService from './data-api-service.js';
+
+const AUTHORIZATION = 'Basic abracadabra69';
+const END_POINT = 'https://24.objects.htmlacademy.pro/big-trip';
 
 const siteHeaderElement = document.querySelector('.trip-main');
 const siteContentElement = document.querySelector('.trip-events');
 const siteFiltersElement = siteHeaderElement.querySelector('.trip-controls__filters');
-const pointsModel = new PointsModel();
-const destinationsModel = new DestinationsModel();
-const offersModel = new OffersModel();
+const dataApiService = new DataApiService(END_POINT, AUTHORIZATION);
+const pointsModel = new PointsModel({
+  pointsApiService: dataApiService
+});
+const destinationsModel = new DestinationsModel({
+  destinationsApiService: dataApiService
+});
+const offersModel = new OffersModel({
+  offersApiService: dataApiService
+});
 const filterModel = new FilterModel();
 const filterPresenter = new FilterPresenter({
   filterContainer: siteFiltersElement,
@@ -31,6 +42,13 @@ const tripEventsPresenter = new TripEventsPresenter({
   onNewPointDestroy: handleNewPointFormClose
 });
 
+async function initData() {
+  await destinationsModel.init();
+  await offersModel.init();
+  await pointsModel.init();
+  render(newPointButtonComponent, siteHeaderElement);
+}
+
 function handleNewPointFormClose() {
   newPointButtonComponent.element.disabled = false;
 }
@@ -40,7 +58,6 @@ function handleNewPointButtonClick() {
   newPointButtonComponent.element.disabled = true;
 }
 
-render(newPointButtonComponent, siteHeaderElement);
-
 filterPresenter.init();
 tripEventsPresenter.init();
+initData();
