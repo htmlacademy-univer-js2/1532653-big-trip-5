@@ -59,8 +59,8 @@ function isPointPast(date) {
 }
 
 function sortPointTime(pointA, pointB) {
-  const durationA = dayjs.duration(dayjs(pointA.dateTo).diff(pointA.dateFrom));
-  const durationB = dayjs.duration(dayjs(pointB.dateTo).diff(pointB.dateFrom));
+  const durationA = dayjs(pointA.dateTo).diff(pointA.dateFrom);
+  const durationB = dayjs(pointB.dateTo).diff(pointB.dateFrom);
 
   return durationB - durationA;
 }

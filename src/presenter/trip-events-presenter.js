@@ -2,6 +2,7 @@ import {render, RenderPosition, remove} from '../framework/render.js';
 import SortView from '../view/sort-view.js';
 import PointListView from '../view/point-list-view.js';
 import NoPointView from '../view/no-point-view.js';
+import LoadingView from '../view/loading-view.js';
 import PointPresenter from './point-presenter.js';
 import NewPointPresenter from './new-point-presenter.js';
 import {sortPointTime, sortPointPrice} from '../utils/point.js';
@@ -16,15 +17,15 @@ export default class TripEventsPresenter {
   #filterModel = null;
 
   #pointListComponent = new PointListView();
+  #loadingComponent = new LoadingView();
   #sortComponent = null;
   #noPointComponent = null;
 
-  #tripEventsDestinations = null;
-  #tripEventsOffers = null;
   #pointPresenters = new Map();
   #newPointPresenter = null;
   #currentSortType = SortType.DEFAULT;
   #filterType = FilterType.EVERYTHING;
+  #isLoading = true;
 
   constructor({tripEventsContainer, pointsModel, destinationsModel, offersModel, filterModel, onNewPointDestroy}) {
     this.#tripEventsContainer = tripEventsContainer;
@@ -59,10 +60,15 @@ export default class TripEventsPresenter {
     return filteredPoints;
   }
 
-  init() {
-    this.#tripEventsDestinations = this.#destinationsModel.destinations;
-    this.#tripEventsOffers = this.#offersModel.offers;
+  get destinations() {
+    return this.#destinationsModel.destinations;
+  }
 
+  get offers() {
+    return this.#offersModel.offers;
+  }
+
+  init() {
     this.#renderTripEvents();
   }
 
@@ -96,8 +102,8 @@ export default class TripEventsPresenter {
       case UpdateType.PATCH:
         this.#pointPresenters.get(data.id).init({
           point: data,
-          destinations: this.#tripEventsDestinations,
-          offers: this.#tripEventsOffers,
+          destinations: this.destinations,
+          offers: this.offers,
         });
         break;
       case UpdateType.MINOR:
@@ -105,7 +111,12 @@ export default class TripEventsPresenter {
         this.#renderTripEvents();
         break;
       case UpdateType.MAJOR:
-        this.#clearTripEvents();
+        this.#clearTripEvents(true);
+        this.#renderTripEvents();
+        break;
+      case UpdateType.INIT:
+        this.#isLoading = false;
+        remove(this.#loadingComponent);
         this.#renderTripEvents();
         break;
     }
@@ -127,7 +138,7 @@ export default class TripEventsPresenter {
       onSortTypeChange: this.#handleSortTypeChange
     });
 
-    render(this.#sortComponent, this.#tripEventsContainer, RenderPosition.AFTERBEGINBEGIN);
+    render(this.#sortComponent, this.#tripEventsContainer, RenderPosition.AFTERBEGIN);
   }
 
   #renderPoint(point) {
@@ -139,14 +150,18 @@ export default class TripEventsPresenter {
 
     pointPresenter.init({
       point,
-      destinations: this.#tripEventsDestinations,
-      offers: this.#tripEventsOffers,
+      destinations: this.destinations,
+      offers: this.offers,
     });
     this.#pointPresenters.set(point.id, pointPresenter);
   }
 
   #renderPoints() {
     this.points.forEach((point) => this.#renderPoint(point));
+  }
+
+  #renderLoading() {
+    render(this.#loadingComponent, this.#tripEventsContainer);
   }
 
   #renderNoPoints() {
@@ -174,6 +189,11 @@ export default class TripEventsPresenter {
   }
 
   #renderTripEvents() {
+    if (this.#isLoading) {
+      this.#renderLoading();
+      return;
+    }
+
     if (!this.points.length) {
       this.#renderNoPoints();
       return;
