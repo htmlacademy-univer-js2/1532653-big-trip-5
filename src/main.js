@@ -15,15 +15,9 @@ const siteHeaderElement = document.querySelector('.trip-main');
 const siteContentElement = document.querySelector('.trip-events');
 const siteFiltersElement = siteHeaderElement.querySelector('.trip-controls__filters');
 const dataApiService = new DataApiService(END_POINT, AUTHORIZATION);
-const pointsModel = new PointsModel({
-  pointsApiService: dataApiService
-});
-const destinationsModel = new DestinationsModel({
-  destinationsApiService: dataApiService
-});
-const offersModel = new OffersModel({
-  offersApiService: dataApiService
-});
+const pointsModel = new PointsModel({pointsApiService: dataApiService});
+const destinationsModel = new DestinationsModel({destinationsApiService: dataApiService});
+const offersModel = new OffersModel({offersApiService: dataApiService});
 const filterModel = new FilterModel();
 const filterPresenter = new FilterPresenter({
   filterContainer: siteFiltersElement,
