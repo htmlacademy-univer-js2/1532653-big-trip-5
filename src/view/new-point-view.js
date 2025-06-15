@@ -15,7 +15,7 @@ const BLANK_POINT = {
   type: 'flight'
 };
 
-function createAddNewPointTypesTemplate(type) {
+function createNewPointTypesTemplate(type, isDisabled) {
   return (
     `<fieldset class="event__type-group">
       <legend class="visually-hidden">Event type</legend>
@@ -27,6 +27,7 @@ function createAddNewPointTypesTemplate(type) {
           type="radio"
           name="event-type"
           value="${item}" ${item === type ? 'checked' : ''}
+          ${isDisabled ? 'disabled' : ''}
         >
         <label class="event__type-label  event__type-label--${item}"
           for="event-type-${item}-1"
@@ -37,21 +38,23 @@ function createAddNewPointTypesTemplate(type) {
   );
 }
 
-function createAddNewPointDestinationsTemplate(pointDestination, destinations) {
+function createNewPointDestinationsTemplate(pointDestination, destinations, isDisabled) {
   return (
     `<input class="event__input  event__input--destination"
       id="event-destination-1"
       type="text"
       name="event-destination"
-      value="${pointDestination ? pointDestination.name : ''}"
-      list="destination-list-1">
+      value="${pointDestination.name ? pointDestination.name : ''}"
+      list="destination-list-1"
+      ${isDisabled ? 'disabled' : ''}
+    >
     <datalist id="destination-list-1">
       ${destinations.map((item) => `<option value="${item.name}"></option>`).join('')}
     </datalist>`
   );
 }
 
-function createAddNewPointOffersTemplate(offersType, pointOffers) {
+function createNewPointOffersTemplate(offersType, pointOffers, isDisabled) {
   return (
     offersType.length ? `<section class="event__section  event__section--offers">
       <h3 class="event__section-title  event__section-title--offers">Offers</h3>
@@ -63,6 +66,7 @@ function createAddNewPointOffersTemplate(offersType, pointOffers) {
             id="${item.id}"
             type="checkbox"
             name="event-offer-luggage" ${pointOffers.some((offer) => offer.id === item.id) ? 'checked' : ''}
+            ${isDisabled ? 'disabled' : ''}
           >
           <label class="event__offer-label" for="${item.id}">
             <span class="event__offer-title">${item.title}</span>
@@ -75,7 +79,7 @@ function createAddNewPointOffersTemplate(offersType, pointOffers) {
   );
 }
 
-function createAddNewPointDescriptionTemplate(pointDestination) {
+function createNewPointDescriptionTemplate(pointDestination) {
   return (
     pointDestination.description ? `<section class="event__section  event__section--destination">
       <h3 class="event__section-title  event__section-title--destination">Destination</h3>
@@ -83,25 +87,32 @@ function createAddNewPointDescriptionTemplate(pointDestination) {
 
       ${pointDestination.pictures.length ? `<div class="event__photos-container">
         <div class="event__photos-tape">
-          ${pointDestination.pictures.map((item) => `<img class="event__photo" src="${item.src}" alt="${item.description}">`)}
+          ${pointDestination.pictures.map((item) => `<img class="event__photo" src="${item.src}" alt="${item.description}">`).join('')}
         </div>
       </div>` : ''}
     </section>` : ''
   );
 }
 
-function createAddNewPointTemplate({point, destinations, offers}) {
-  const {price, dateFrom, dateTo, type} = point;
+function createNewPointTemplate({point, destinations, offers}) {
+  const {
+    price,
+    dateFrom,
+    dateTo,
+    type,
+    isDisabled,
+    isSaving,
+  } = point;
 
   const dataFromValue = humanizeDate(dateFrom);
   const dataToValue = humanizeDate(dateTo);
   const pointDestination = point.destination ? getPointDestination(point, destinations) : '';
   const pointOffers = getPointOffers(point, offers);
-  const typesListTemplate = createAddNewPointTypesTemplate(type);
-  const destinationsListTemplate = createAddNewPointDestinationsTemplate(pointDestination, destinations);
+  const typesListTemplate = createNewPointTypesTemplate(type, isDisabled);
+  const destinationsListTemplate = createNewPointDestinationsTemplate(pointDestination, destinations, isDisabled);
   const offersType = getOffersType(offers, type);
-  const offersTemplate = createAddNewPointOffersTemplate(offersType, pointOffers);
-  const descriptionTemplate = createAddNewPointDescriptionTemplate(pointDestination);
+  const offersTemplate = createNewPointOffersTemplate(offersType, pointOffers, isDisabled);
+  const descriptionTemplate = createNewPointDescriptionTemplate(pointDestination);
 
   return (
     `<li class="trip-events__item">
@@ -128,10 +139,10 @@ function createAddNewPointTemplate({point, destinations, offers}) {
 
           <div class="event__field-group  event__field-group--time">
             <label class="visually-hidden" for="event-start-time-1">From</label>
-            <input class="event__input  event__input--time" id="event-start-time-1" type="text" name="event-start-time" value="${dataFromValue}">
+            <input class="event__input  event__input--time" id="event-start-time-1" type="text" name="event-start-time" value="${dataFromValue}" ${isDisabled ? 'disabled' : ''}>
             &mdash;
             <label class="visually-hidden" for="event-end-time-1">To</label>
-            <input class="event__input  event__input--time" id="event-end-time-1" type="text" name="event-end-time" value="${dataToValue}">
+            <input class="event__input  event__input--time" id="event-end-time-1" type="text" name="event-end-time" value="${dataToValue}" ${isDisabled ? 'disabled' : ''}>
           </div>
 
           <div class="event__field-group  event__field-group--price">
@@ -139,11 +150,13 @@ function createAddNewPointTemplate({point, destinations, offers}) {
               <span class="visually-hidden">Price</span>
               &euro;
             </label>
-            <input class="event__input  event__input--price" id="event-price-1" type="number" step="1" min="1" name="event-price" value="${price ? price : ''}">
+            <input class="event__input  event__input--price" id="event-price-1" type="number" step="1" min="1" name="event-price" value="${price}" ${isDisabled ? 'disabled' : ''}>
           </div>
 
-          <button class="event__save-btn  btn  btn--blue" type="submit">Save</button>
-          <button class="event__reset-btn" type="reset">Cancel</button>
+          <button class="event__save-btn  btn  btn--blue" type="submit" ${isDisabled ? 'disabled' : ''}>
+            ${isSaving ? 'Saving...' : 'Save'}
+          </button>
+          <button class="event__reset-btn" type="reset" ${isDisabled ? 'disabled' : ''}>Cancel</button>
         </header>
         <section class="event__details">
           ${offersTemplate}
@@ -155,7 +168,7 @@ function createAddNewPointTemplate({point, destinations, offers}) {
   );
 }
 
-export default class AddNewPointView extends AbstractStatefulView {
+export default class NewPointView extends AbstractStatefulView {
   #destinations = null;
   #offers = null;
   #handleFormSubmit = null;
@@ -164,7 +177,10 @@ export default class AddNewPointView extends AbstractStatefulView {
 
   constructor({point = BLANK_POINT, destinations, offers, onFormSubmit, onDeleteClick}) {
     super();
-    this._setState(point);
+    this._setState({...point,
+      isDisabled: false,
+      isSaving: false,
+    });
     this.#destinations = destinations;
     this.#offers = offers;
     this.#handleFormSubmit = onFormSubmit;
@@ -174,7 +190,7 @@ export default class AddNewPointView extends AbstractStatefulView {
   }
 
   get template() {
-    return createAddNewPointTemplate({point: this._state, destinations: this.#destinations, offers: this.#offers});
+    return createNewPointTemplate({point: this._state, destinations: this.#destinations, offers: this.#offers});
   }
 
   removeElement() {
@@ -199,6 +215,8 @@ export default class AddNewPointView extends AbstractStatefulView {
       .addEventListener('change', this.#typeRadioHandler);
     this.element.querySelector('.event__input--destination')
       .addEventListener('change', this.#destinationOptionHandler);
+    this.element.querySelector('.event__input--price')
+      .addEventListener('input', this.#priceInputHandler);
     if (getOffersType(this.#offers, this._state.type).length) {
       this.element.querySelector('.event__available-offers')
         .addEventListener('change', this.#offersChangeHandler);
@@ -210,6 +228,8 @@ export default class AddNewPointView extends AbstractStatefulView {
 
   #formSubmitHandler = (evt) => {
     evt.preventDefault();
+    delete this._state.isDisabled;
+    delete this._state.isSaving;
     this.#handleFormSubmit(this._state);
   };
 
@@ -298,6 +318,14 @@ export default class AddNewPointView extends AbstractStatefulView {
       },
     );
   }
+
+  #priceInputHandler = (evt) => {
+    evt.preventDefault();
+
+    this._setState({
+      price: Number(evt.target.value),
+    });
+  };
 
   #formDeleteClickHandler = (evt) => {
     evt.preventDefault();
